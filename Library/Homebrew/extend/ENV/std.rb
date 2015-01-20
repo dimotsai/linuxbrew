@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 require 'hardware'
 require 'os/mac'
 require 'extend/ENV/shared'
@@ -231,6 +230,7 @@ module Stdenv
   end
 
   def x11
+    return unless OS.mac?
     # There are some config scripts here that should go in the PATH
     append_path "PATH", MacOS::X11.bin.to_s
 
@@ -265,11 +265,11 @@ module Stdenv
 
   def m64
     append_to_cflags '-m64'
-    append 'LDFLAGS', "-arch #{Hardware::CPU.arch_64_bit}"
+    append 'LDFLAGS', "-arch #{Hardware::CPU.arch_64_bit}" if OS.mac?
   end
   def m32
     append_to_cflags '-m32'
-    append 'LDFLAGS', "-arch #{Hardware::CPU.arch_32_bit}"
+    append 'LDFLAGS', "-arch #{Hardware::CPU.arch_32_bit}" if OS.mac?
   end
 
   def universal_binary

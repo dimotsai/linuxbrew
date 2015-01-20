@@ -1,9 +1,13 @@
-require "formula"
-
 class Qwt < Formula
   homepage "http://qwt.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/qwt/qwt/6.1.1/qwt-6.1.1.tar.bz2"
-  sha1 "6d142cb9725da7e03fbb507532fc268b5212080a"
+  url "https://downloads.sourceforge.net/project/qwt/qwt/6.1.2/qwt-6.1.2.tar.bz2"
+  sha1 "6af82b6ee4132f779d1c8c2db872f01463b0d61c"
+
+  bottle do
+    sha1 "a2882aaaff55c53881e82a97181d907e6d6edc46" => :yosemite
+    sha1 "02f9e3920fa64ff44393aa339a784e93e786fc8b" => :mavericks
+    sha1 "12f8a7d2a4cd125918d40f11db1dcbbfd424cec2" => :mountain_lion
+  end
 
   option "with-qwtmathml", "Build the qwtmathml library"
   option "without-plugin", "Skip building the Qt Designer plugin"

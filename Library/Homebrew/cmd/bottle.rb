@@ -26,7 +26,7 @@ BOTTLE_ERB = <<-EOS
     <% checksums.each do |checksum_type, checksum_values| %>
     <% checksum_values.each do |checksum_value| %>
     <% checksum, osx = checksum_value.shift %>
-    <%= checksum_type %> "<%= checksum %>" => :"<%= osx %>"
+    <%= checksum_type %> "<%= checksum %>" => :<%= osx %>
     <% end %>
     <% end %>
   end
@@ -177,7 +177,9 @@ module Homebrew
       end
     end
 
-    root_url = ARGV.value("root_url")
+    root_url = ARGV.value("root-url")
+    # Use underscored version for legacy reasons. Remove at some point.
+    root_url ||= ARGV.value("root_url")
 
     bottle = BottleSpecification.new
     bottle.root_url(root_url) if root_url

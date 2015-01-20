@@ -1,14 +1,12 @@
-require "formula"
-
 class Swig < Formula
   homepage "http://www.swig.org/"
-  url "https://downloads.sourceforge.net/project/swig/swig/swig-3.0.2/swig-3.0.2.tar.gz"
-  sha1 "e695a14acf39b25f3ea2d7303e23e39dfe284e31"
+  url "https://downloads.sourceforge.net/project/swig/swig/swig-3.0.3/swig-3.0.3.tar.gz"
+  sha1 "e68e1fbdf92ae34c0949c9babef10c8800377b93"
 
   bottle do
-    sha1 "1736d03e7704234b4729262cdb4077f6004a87b9" => :mavericks
-    sha1 "dd3ddbbfdc77d9d20f4754fde6bc254568e73920" => :mountain_lion
-    sha1 "f08edf42ba3db64e03e90f6bb17d225e0e5218df" => :lion
+    sha1 "ede5284bbc1b78187bb8fbbddfbc60e055dd73ef" => :yosemite
+    sha1 "71e032fd9ee5f9aa96339e3c23d814e171215671" => :mavericks
+    sha1 "de538a05a03ac2e7e8e5028eaf8f3242c77801d7" => :mountain_lion
   end
 
   option :universal
@@ -20,6 +18,30 @@ class Swig < Formula
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make"
-    system "make install"
+    system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<-EOS.undent
+      int add(int x, int y)
+      {
+        return x + y;
+      }
+    EOS
+    (testpath/"test.i").write <<-EOS.undent
+      %module test
+      %inline %{
+      extern int add(int x, int y);
+      %}
+    EOS
+    (testpath/"run.rb").write <<-EOS.undent
+      require "./test"
+      puts Test.add(1, 1)
+    EOS
+    system "#{bin}/swig", "-ruby", "test.i"
+    system ENV.cc, "-c", "test.c"
+    system ENV.cc, "-c", "test_wrap.c", "-I/System/Library/Frameworks/Ruby.framework/Headers/"
+    system ENV.cc, "-bundle", "-flat_namespace", "-undefined", "suppress", "test.o", "test_wrap.o", "-o", "test.bundle"
+    assert_equal "2", shell_output("ruby run.rb").strip
   end
 end

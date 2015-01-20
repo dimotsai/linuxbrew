@@ -1,9 +1,9 @@
-require 'formula'
+require "formula"
 
 class Sonar < Formula
-  homepage 'http://www.sonarqube.org/'
-  url 'http://dist.sonar.codehaus.org/sonarqube-4.4.zip'
-  sha1 'a2ca39e2b4f4a14c4212832a313b73228d824984'
+  homepage "http://www.sonarqube.org/"
+  url "http://dist.sonar.codehaus.org/sonarqube-5.0.zip"
+  sha1 "6040d24e24195af2c87a3232393523fac0ddcc88"
 
   def install
     # Delete native bin directories for other systems

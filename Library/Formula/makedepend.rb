@@ -1,5 +1,3 @@
-require "formula"
-
 class Makedepend < Formula
   homepage "http://x.org"
   url "http://xorg.freedesktop.org/releases/individual/util/makedepend-1.0.5.tar.bz2"
@@ -7,9 +5,11 @@ class Makedepend < Formula
 
   bottle do
     cellar :any
+    sha1 "9a35ee27a96d2916dd347b362a2f62a3eb37b252" => :yosemite
     sha1 "83db1daee01e4eb752c711934eb88850b3ee70d6" => :mavericks
     sha1 "9c55ea85af719a448a4522958bd0e57e5e7741d1" => :mountain_lion
     sha1 "66c5cb0f796db17741c38fb98bd2c05c82bf989c" => :lion
+    sha1 "6661aca525d6e4e3e1548c8d1ac2b1f4034d1dc3" => :x86_64_linux
   end
 
   depends_on "pkg-config" => :build
@@ -44,5 +44,10 @@ class Makedepend < Formula
                           "--disable-silent-rules",
                           "--prefix=#{prefix}"
     system "make", "install"
+  end
+
+  test do
+    touch "Makefile"
+    system "#{bin}/makedepend"
   end
 end

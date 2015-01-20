@@ -1,16 +1,19 @@
-require 'formula'
-
 class Openssl < Formula
-  homepage 'http://openssl.org'
-  url 'https://www.openssl.org/source/openssl-1.0.1i.tar.gz'
-  mirror 'http://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.0.1i.tar.gz'
-  sha256 '3c179f46ca77069a6a0bac70212a9b3b838b2f66129cb52d568837fc79d8fcc7'
+  homepage "https://openssl.org"
+  url "https://www.openssl.org/source/openssl-1.0.1l.tar.gz"
+  mirror "https://raw.githubusercontent.com/DomT4/LibreMirror/master/OpenSSL/openssl-1.0.1l.tar.gz"
+  sha256 "b2cf4d48fe5d49f240c61c9e624193a6f232b5ed0baf010681e725963c40d1d4"
 
   bottle do
-    revision 3
-    sha1 "0f669ad9b9910e3807f7b7db1be665306d5f3821" => :mavericks
-    sha1 "b9a769ae1b4dc7360b3d0081d921ebae2f2d2fc6" => :mountain_lion
-    sha1 "20de4f43e7ae42c8ba16b3923e6e33d06663ef49" => :lion
+    sha1 "1d804c229e7a49cf98c1211dd2524c1b258a0388" => :yosemite
+    sha1 "c5087d42713738542d32eb50dbfcdf5143cb5ad3" => :mavericks
+    sha1 "4a72fe4a9d5d5914822d82f42df2c0f3392bfa6e" => :mountain_lion
+  end
+
+  resource "cacert" do
+    #homepage "http://curl.haxx.se/docs/caextract.html"
+    url "http://curl.haxx.se/ca/cacert.pem"
+    sha1 "e8e794392766cca1528858a229ac046b0f5d5801"
   end
 
   option :universal
@@ -19,10 +22,10 @@ class Openssl < Formula
   depends_on "makedepend" => :build
 
   keg_only :provided_by_osx,
-    "The OpenSSL provided by OS X is too old for some software."
+    "Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries"
 
   def arch_args
-    return { :i386  => %w[linux-x86_64], :x86_64 => %w[linux-x86_64] } if OS.linux?
+    return { :i386  => %w[linux-generic32], :x86_64 => %w[linux-x86_64] } if OS.linux?
     {
       :x86_64 => %w[darwin64-x86_64-cc enable-ec_nistp_64_gcc_128],
       :i386   => %w[darwin-i386-cc],
@@ -64,7 +67,10 @@ class Openssl < Formula
       system "perl", "./Configure", *(configure_args + arch_args[arch])
       system "make", "depend"
       system "make"
-      system "make", "test" if build.with? "check"
+
+      if (MacOS.prefer_64_bit? || arch == MacOS.preferred_arch) && build.with?("check")
+        system "make", "test"
+      end
 
       if build.universal?
         cp Dir["*.?.?.?.dylib", "*.a", "apps/openssl"], dir
@@ -102,6 +108,12 @@ class Openssl < Formula
   end
 
   def post_install
+    unless OS.mac?
+      # Download and install cacert.pem from curl.haxx.se
+      (etc/"openssl").install resource("cacert").files("cacert.pem" => "cert.pem")
+      return
+    end
+
     keychains = %w[
       /Library/Keychains/System.keychain
       /System/Library/Keychains/SystemRootCertificates.keychain
@@ -122,9 +134,14 @@ class Openssl < Formula
   end
 
   test do
-    (testpath/'testfile.txt').write("This is a test file")
+    # Make sure the necessary .cnf file exists, otherwise OpenSSL gets moody.
+    assert (HOMEBREW_PREFIX/"etc/openssl/openssl.cnf").exist?,
+            "OpenSSL requires the .cnf file for some functionality"
+
+    # Check OpenSSL itself functions as expected.
+    (testpath/"testfile.txt").write("This is a test file")
     expected_checksum = "91b7b0b1e27bfbf7bc646946f35fa972c47c2d32"
-    system "#{bin}/openssl", 'dgst', '-sha1', '-out', 'checksum.txt', 'testfile.txt'
+    system "#{bin}/openssl", "dgst", "-sha1", "-out", "checksum.txt", "testfile.txt"
     open("checksum.txt") do |f|
       checksum = f.read(100).split("=").last.strip
       assert_equal checksum, expected_checksum
